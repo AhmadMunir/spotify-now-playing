@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const querystring = require('querystring')
 const { generateRandomString, generateCodeChallenge } = require('./helper/helper')
 const { getAccessToken } = require('./helper/spohelper')
+const x_router = require('./router/x_router')
 const LocalStorage = require('node-localstorage').LocalStorage;
 
 const opt = {
@@ -23,6 +24,8 @@ const SPO_CLIENT_ID = process.env.SPO_CLIENT_ID
 const SPO_CLIENT_SECRET = process.env.SPO_CLIENT_SECRET
 
 localStorage = new LocalStorage('./snp');
+
+app.use('', x_router)
 
 app.get('/', (req, res)=>{
     res.send("HALO")
@@ -98,12 +101,7 @@ app.get('/spocallback', async(req, res)=>{
 //     console.log(`SERVER RUNNING IN ${port}`)
 // })
 
-app.get('/xlogin', async(req, res)=>{
-  
-})
-app.get('/xcallback', async(req, res)=>{
 
-})
 
 https.createServer(opt,app).listen(port,()=>{
   console.log("LISTEN ON ", port)

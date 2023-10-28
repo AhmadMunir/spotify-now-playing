@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { response } = require("express");
+require('dotenv').config()
 
 const getAccessToken = async(clientId, code, verifier)=>{
     const params ={
