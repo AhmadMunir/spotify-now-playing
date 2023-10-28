@@ -7,6 +7,7 @@ const querystring = require('querystring')
 const { generateRandomString, generateCodeChallenge } = require('./helper/helper')
 const { getAccessToken } = require('./helper/spohelper')
 const x_router = require('./router/x_router')
+const app_router = require('./router/app_router')
 const LocalStorage = require('node-localstorage').LocalStorage;
 
 const opt = {
@@ -26,6 +27,7 @@ const SPO_CLIENT_SECRET = process.env.SPO_CLIENT_SECRET
 localStorage = new LocalStorage('./snp');
 
 app.use('', x_router)
+app.use('', app_router)
 
 app.get('/', (req, res)=>{
     res.send("HALO")

@@ -1,0 +1,25 @@
+
+doctype html 
+html(lang="en") 
+    head 
+        title= 'Node.js Template' 
+    body 
+        h1 #{text} 
+        p I am #{age} years old
+        p#refresh-timer
+    script.
+        let refreshOn = #{refreshOn}
+        let timer = 0
+        //- alert(#{refreshOn})
+        const refreshTimer = document.getElementById('refresh-timer');
+
+
+        setInterval(()=>{
+            timer += 1
+            let countdown = refreshOn - timer
+            console.log(timer)
+            refreshTimer.innerHTML = `Refreshing page in: ${countdown} seconds`
+            if (timer >= refreshOn) {
+                window.location.reload();
+            }}, 1000)
+        

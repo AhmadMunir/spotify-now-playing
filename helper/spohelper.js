@@ -26,5 +26,13 @@ const getAccessToken = async(clientId, code, verifier)=>{
     }
 }
 
+const getSpotify = async(url, access_token)=>{
+    try {
+        const getSpo = await axios.get(url, {headers:{"Authorization": access_token}})
+        return getSpo
+    } catch (error) {
+        return error.response
+    }
+}
 
-module.exports = {getAccessToken}
+module.exports = {getAccessToken, getSpotify}
