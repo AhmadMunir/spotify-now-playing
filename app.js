@@ -1,9 +1,18 @@
 const express = require('express')
 const axios = require('axios')
+const https = require('https')
+const fs = require('fs')
 const cookieParser = require('cookie-parser')
 const querystring = require('querystring')
 const { generateRandomString, generateCodeChallenge } = require('./helper/helper')
+const { getAccessToken } = require('./helper/spohelper')
 const LocalStorage = require('node-localstorage').LocalStorage;
+
+const opt = {
+  key: fs.readFileSync('crt/key.pem'),
+  cert: fs.readFileSync('crt/cert.pem'),
+  passphrase: "iloveyou"
+}
 
 const app = express()
 app.use(cookieParser())
@@ -20,12 +29,12 @@ app.get('/', (req, res)=>{
 })
 
 app.get('/spologin', async(req, res)=>{
-    const codeVerifier = generateCodeChallenge(128)
+    const codeVerifier = generateRandomString(128)
+    const codeChallenge = await generateCodeChallenge(codeVerifier)
     const state = generateRandomString(16)
-    const scope = 'user-read-private user-read-email'
+    const scope = 'user-read-currently-playing'
 
-    localStorage.setItem('code_verifier', codeVerifier);
-
+    res.cookie('code_verifier', codeVerifier);
     res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
         response_type: 'code',
@@ -34,12 +43,13 @@ app.get('/spologin', async(req, res)=>{
         redirect_uri: process.env.SPO_CALLBACK_URL,
         state: state,
         code_challenge_method: 'S256',
-        code_challenge: codeVerifier
+        code_challenge: codeChallenge
     }));
 })
 
 app.get('/spocallback', async(req, res)=>{
     console.log("MASUK SINI")
+    console.log("CODE", req.cookies['code_verifier'])
     var code = req.query.code || null;
   var state = req.query.state || null;
 
@@ -61,11 +71,40 @@ app.get('/spocallback', async(req, res)=>{
       },
       json: true
     };
+    if(!code) redirectToAuth(SPO_CLIENT_ID)
+    
+    try {
+      const reqAccessToken = await getAccessToken(SPO_CLIENT_ID, code, req.cookies["code_verifier"])
+      
+      console.log(reqAccessToken.data)
+      if(reqAccessToken.status){
+        const {access_token, refresh_token} = reqAccessToken.data
+        
+        res.cookie("access_token", access_token)
+        res.cookie("refresh_token", refresh_token)
 
-    console.log(authOptions)
+        return res.send("ANDA BERHASIL LOGIN")
+      }else{
+        if(reqAccessToken.response.status != 200) return res.redirect("/spologin")
+      }
+      
+    } catch (error) {
+      return res.send("LOGIN LAGI")
+    }
   }
 })
 
-app.listen(port, ()=>{
-    console.log(`SERVER RUNNING IN ${port}`)
+// app.listen(port, ()=>{
+//     console.log(`SERVER RUNNING IN ${port}`)
+// })
+
+app.get('/xlogin', async(req, res)=>{
+  
+})
+app.get('/xcallback', async(req, res)=>{
+
+})
+
+https.createServer(opt,app).listen(port,()=>{
+  console.log("LISTEN ON ", port)
 })

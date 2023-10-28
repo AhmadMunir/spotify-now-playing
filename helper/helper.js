@@ -11,19 +11,22 @@ const generateRandomString = (length)=>{
 }
 
 const generateCodeChallenge = async(codeVerifier)=>{
-    const encoder = new TextEncoder();
-    const data = encoder.encode(codeVerifier);
-    var hash = crypto.createHash('sha256')
-    hash_data = hash.update(data, 'utf-8')
-    const digest = hash_data.digest('hex')
+    const hashed = await sha256(codeVerifier)
+    const codeChallenge = base64urlencode(hashed)
 
-    return base64encode(digest);
+    return codeChallenge
 }
-const base64encode = (string) => {
-    return btoa(String.fromCharCode.apply(null, new Uint8Array(string)))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-  } 
+function base64urlencode(a){
+        return btoa(String.fromCharCode(...new Uint8Array(a)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+    }
+async function sha256(plain) {
+      const encoder = new TextEncoder()
+      const data = encoder.encode(plain)
+    
+      return crypto.webcrypto.subtle.digest('SHA-256', data)
+    } 
 
 module.exports = {generateRandomString, generateCodeChallenge}
